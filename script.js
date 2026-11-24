@@ -1,0 +1,16 @@
+'use strict';
+const menu=document.querySelector('.menu'), nav=document.querySelector('#nav-links');
+function closeMenu(){nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-label','Open navigation');}
+menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');});
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&nav.classList.contains('open')){closeMenu();menu.focus();}});
+const links=[...nav.querySelectorAll('a')];const sections=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+function activeSection(){let current=sections[0];for(const s of sections){if(s.getBoundingClientRect().top<=145)current=s;}if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-10)current=sections[sections.length-1];links.forEach(a=>{const active=a.getAttribute('href')==='#'+current.id;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});}window.addEventListener('scroll',activeSection,{passive:true});activeSection();
+const gallery=document.querySelector('#gallery'),pic=document.querySelector('#gallery-image'),caption=document.querySelector('#gallery-caption'),count=document.querySelector('#gallery-count');const triggers=[...document.querySelectorAll('[data-image]')];let index=0,lastFocus=null;
+function display(i){index=(i+triggers.length)%triggers.length;const item=triggers[index];pic.src=item.dataset.image;pic.alt=item.querySelector('img').alt;caption.textContent=item.dataset.caption;count.textContent=`${index+1} / ${triggers.length}`;}
+function openGallery(i){lastFocus=document.activeElement;display(i);gallery.showModal();document.querySelector('#close-gallery').focus();}
+triggers.forEach((item,i)=>item.addEventListener('click',()=>openGallery(i)));document.querySelector('[data-open-gallery]').addEventListener('click',()=>openGallery(1));document.querySelector('#close-gallery').addEventListener('click',()=>gallery.close());document.querySelector('#prev-image').addEventListener('click',()=>display(index-1));document.querySelector('#next-image').addEventListener('click',()=>display(index+1));gallery.addEventListener('click',e=>{if(e.target===gallery)gallery.close();});gallery.addEventListener('keydown',e=>{if(e.key==='ArrowRight')display(index+1);if(e.key==='ArrowLeft')display(index-1);});gallery.addEventListener('close',()=>{if(lastFocus)lastFocus.focus();});
+const copy=document.querySelector('[data-copy]'),status=document.querySelector('#copy-status');copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(copy.dataset.copy);status.textContent='Email copied.';}catch{status.textContent='Please select and copy the email address.';}});document.querySelector('#year').textContent=new Date().getFullYear();
+
+// Native print dialog supports paper printing and Save as PDF.
+document.querySelector("#print-portfolio").addEventListener("click", async()=>{await Promise.all([...document.querySelectorAll("main img")].map(img=>img.decode().catch(()=>{})));window.print();});
